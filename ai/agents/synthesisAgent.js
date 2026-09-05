@@ -551,6 +551,22 @@ function fallbackSynthesizeResponse(
               `Data source: ${source}.`;
           }
         }
+      } else {
+        if (lang === "te") {
+          answerText =
+            `మీ ప్రస్తుత స్థానానికి సమీపంలో ఉన్న Potential Fishing Zone ${name}. ` +
+            `ఇది సుమారు ${distance} దూరంలో ఉంది. ` +
+            `సముద్ర ఉపరితల ఉష్ణోగ్రత ${sst}, ` +
+            `క్లోరోఫిల్ ${chlorophyll}. ` +
+            `డేటా మూలం: ${source}.`;
+        } else {
+          answerText =
+            `The nearest available Potential Fishing Zone is ${name}. ` +
+            `It is approximately ${distance} from your current location. ` +
+            `Sea surface temperature is ${sst}, ` +
+            `and chlorophyll concentration is ${chlorophyll}. ` +
+            `Data source: ${source}.`;
+        }
       }
 
       /*

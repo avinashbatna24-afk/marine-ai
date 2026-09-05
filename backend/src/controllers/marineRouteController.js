@@ -1,4 +1,5 @@
 const { planMarineRoute } = require("../../services/marineRouteService");
+const { findOptimizedSafeRoute } = require("../../services/routeOptimizationService");
 
 function planRoute(req, res) {
   try {
@@ -48,6 +49,30 @@ function planRoute(req, res) {
   }
 }
 
+async function optimizeSafeRoute(req, res) {
+  try {
+    const { origin, destination, vesselSpeedKnots, marineConditions } = req.body;
+
+    const result = await findOptimizedSafeRoute({
+      origin,
+      destination,
+      vesselSpeedKnots,
+      marineConditions,
+    });
+
+    return res.json(result);
+  } catch (error) {
+    console.error("Optimize safe route controller error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Safe route optimization failed",
+      error: error.message,
+    });
+  }
+}
+
 module.exports = {
   planRoute,
+  optimizeSafeRoute,
 };

@@ -92,70 +92,37 @@ function fallbackCreatePlan(intent, userQuery) {
 
   const isTomorrow = query.includes("tomorrow") || query.includes("రేపు");
 
-  const planMap = {
-    /*
-     * PFZ SEARCH
-     *
-     * Nearest -> getNearbyPFZ
-     * Best / suitable / productive -> rankPFZs
-     */
-    PFZ_SEARCH:
-      query.includes("best") ||
-      query.includes("highest") ||
-      query.includes("suitable") ||
-      query.includes("good fishing") ||
-      query.includes("productive") ||
-      query.includes("మంచి చేపలు") ||
-      query.includes("మంచి ఫిషింగ్")
-        ? ["rankPFZs"]
-        : ["getNearbyPFZ"],
+  let tasks = [];
 
-    /*
-     * MARINE SAFETY
-     */
-    MARINE_SAFETY: isTomorrow
-      ? [
-          "getWeatherForecast",
-          "getMarineForecast",
-          "getWarnings",
-          "calculateRisk",
-        ]
-      : ["getWeather", "getOceanConditions", "getWarnings", "calculateRisk"],
-
-    /*
-     * SAFE ROUTE
-     */
-    SAFE_ROUTE: [
-      "getNearbyPFZ",
-      "getRiskMap",
-      "checkGeofence",
-      "findSafeRoute",
-    ],
-
-    /*
-     * MARINE CONDITIONS
-     */
-    MARINE_CONDITIONS: isTomorrow
+  if (query.includes("compare") || query.includes("why is this pfz better")) {
+    tasks = ["comparePFZs"];
+  } else if (query.includes("chlorophyll")) {
+    tasks = ["getChlorophyllRanking"];
+  } else if (query.includes("within") || query.includes("100 km") || query.includes("50 km") || (query.includes("productive") && query.includes("risk"))) {
+    tasks = ["evaluateConstraintPFZ"];
+  } else if (query.includes("route") && (query.includes("safest") || query.includes("best pfz"))) {
+    tasks = ["getNearbyPFZ", "findOptimizedSafeRoute"];
+  } else if (intent === "PFZ_SEARCH") {
+    tasks = query.includes("best") || query.includes("suitable") || query.includes("productive")
+      ? ["rankPFZs"]
+      : ["getNearbyPFZ"];
+  } else if (intent === "MARINE_SAFETY") {
+    tasks = isTomorrow
+      ? ["getWeatherForecast", "getMarineForecast", "getWarnings", "calculateRisk"]
+      : ["getWeather", "getOceanConditions", "getWarnings", "calculateRisk"];
+  } else if (intent === "SAFE_ROUTE") {
+    tasks = ["getNearbyPFZ", "getRiskMap", "checkGeofence", "findSafeRoute"];
+  } else if (intent === "MARINE_CONDITIONS") {
+    tasks = isTomorrow
       ? ["getWeatherForecast", "getMarineForecast", "getWarnings"]
-      : ["getWeather", "getOceanConditions", "getWarnings"],
-
-    /*
-     * GEOFENCE
-     */
-    GEOFENCE_CHECK: ["checkGeofence"],
-
-    /*
-     * HAZARD ALERT
-     */
-    HAZARD_ALERT: ["getWarnings", "calculateRisk"],
-
-    /*
-     * GENERAL QUERY
-     */
-    GENERAL_QUERY: [],
-  };
-
-  const tasks = planMap[intent] || [];
+      : ["getWeather", "getOceanConditions", "getWarnings"];
+  } else if (intent === "GEOFENCE_CHECK") {
+    tasks = ["checkGeofence"];
+  } else if (intent === "HAZARD_ALERT") {
+    tasks = ["getWarnings", "calculateRisk"];
+  } else {
+    tasks = ["getNearbyPFZ"];
+  }
 
   return {
     intent: intent,

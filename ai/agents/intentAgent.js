@@ -210,8 +210,11 @@ function fallbackDetectIntent(userQuery, activeLanguage = "en") {
   const query = userQuery.toLowerCase();
   const lang = activeLanguage || detectLanguage(userQuery);
 
-  // 1. HAZARD_ALERT
+  // 1. HAZARD_ALERT & GEOFENCE_CHECK
   if (
+    query.includes("avoid") ||
+    query.includes("prohibited") ||
+    query.includes("restricted") ||
     query.includes("alert") ||
     query.includes("warning") ||
     query.includes("cyclone") ||
@@ -220,13 +223,13 @@ function fallbackDetectIntent(userQuery, activeLanguage = "en") {
     query.includes("హెచ్చరిక")
   ) {
     return {
-      intent: "HAZARD_ALERT",
+      intent: query.includes("avoid") || query.includes("restricted") ? "GEOFENCE_CHECK" : "HAZARD_ALERT",
       locationRequired: true,
       timeRequired: true,
       destinationRequired: false,
       language: lang,
       confidence: 0.97,
-      reasoning: "Query asks about active weather warnings or cyclone alerts.",
+      reasoning: "Query asks about restricted zones or weather warnings.",
     };
   }
 
@@ -251,7 +254,36 @@ function fallbackDetectIntent(userQuery, activeLanguage = "en") {
     };
   }
 
-  // 3. MARINE_SAFETY
+  // 3. PFZ_SEARCH (Includes complex constraint reasoning queries)
+  if (
+    query.includes("pfz") ||
+    query.includes("fishing zone") ||
+    query.includes("nearest pfz") ||
+    query.includes("productive") ||
+    query.includes("chlorophyll") ||
+    query.includes("compare") ||
+    query.includes("better") ||
+    query.includes("safest fishing zone") ||
+    query.includes("within") ||
+    query.includes("km") ||
+    query.includes("near me") ||
+    query.includes("where is the nearest") ||
+    query.includes("catch fish") ||
+    query.includes("చేపల మండలం") ||
+    query.includes("చేపలు")
+  ) {
+    return {
+      intent: "PFZ_SEARCH",
+      locationRequired: true,
+      timeRequired: false,
+      destinationRequired: false,
+      language: lang,
+      confidence: 0.99,
+      reasoning: "Query asks for Potential Fishing Zone discovery or comparison.",
+    };
+  }
+
+  // 4. MARINE_SAFETY
   if (
     query.includes("safe") ||
     query.includes("can i go") ||
@@ -274,46 +306,26 @@ function fallbackDetectIntent(userQuery, activeLanguage = "en") {
     };
   }
 
-  // 4. PFZ_SEARCH
-  if (
-    query.includes("pfz") ||
-    query.includes("fishing zone") ||
-    query.includes("nearest pfz") ||
-    query.includes("where is the nearest") ||
-    query.includes("catch fish") ||
-    query.includes("చేపల మండలం") ||
-    query.includes("చేపలు")
-  ) {
-    return {
-      intent: "PFZ_SEARCH",
-      locationRequired: true,
-      timeRequired: false,
-      destinationRequired: false,
-      language: lang,
-      confidence: 0.99,
-      reasoning: "Query asks for Potential Fishing Zone locations.",
-    };
-  }
-
   // 5. MARINE_CONDITIONS
   if (
     query.includes("weather") ||
     query.includes("wave") ||
     query.includes("wind") ||
     query.includes("temperature") ||
-    query.includes("sea") ||
-    query.includes("వాతావరణం") ||
-    query.includes("అలలు") ||
-    query.includes("సముద్రం")
+    query.includes("changed") ||
+    query.includes("yesterday") ||
+    query.includes("getting worse") ||
+    query.includes("trend") ||
+    query.includes("వాతావరణం")
   ) {
     return {
       intent: "MARINE_CONDITIONS",
       locationRequired: true,
-      timeRequired: true,
+      timeRequired: false,
       destinationRequired: false,
       language: lang,
       confidence: 0.95,
-      reasoning: "Query asks for ocean weather or sea metrics.",
+      reasoning: "Query asks about marine weather conditions or trends.",
     };
   }
 
